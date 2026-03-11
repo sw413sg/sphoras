@@ -50,7 +50,7 @@
     <header class="app-header">
         <div class="header-row">
             <div>
-                <h1><span class="sp">SP</span><span class="acman">ACMAN</span><span class="app-version">v. 1.2</span></h1>
+                <h1><span class="sp">SP</span><span class="acman">ACMAN</span><span class="app-version">v. 1.2r</span></h1>
                 <div class="header-subtitle">Control horario del esclavo</div>
             </div>
             <button class="gear-btn" onclick="openSt()">⚙</button>
@@ -214,7 +214,22 @@ function iBk(e){
     r.readAsText(f);
     e.target.value='';
 }
-function updApp(){toast('Actualizando...');if('caches'in window){caches.keys().then(k=>Promise.all(k.map(c=>caches.delete(c)))).then(()=>{if('serviceWorker'in navigator){navigator.serviceWorker.getRegistrations().then(r=>{r.forEach(x=>x.unregister());window.location.href=window.location.pathname+'?v='+new Date().getTime()})}else{window.location.reload(true)}})}else{window.location.reload(true)}}
+function updApp(){
+    toast('Actualizando...');
+    let p = [];
+    if('caches' in window) {
+        p.push(caches.keys().then(k=>Promise.all(k.map(c=>caches.delete(c)))));
+    }
+    if('serviceWorker' in navigator) {
+        p.push(navigator.serviceWorker.getRegistrations().then(r=>Promise.all(r.map(x=>x.unregister()))));
+    }
+    
+    Promise.all(p).then(()=>{
+        fetch(window.location.pathname, {cache: 'reload', mode: 'no-cors'})
+            .then(()=>{ window.location.replace(window.location.pathname); })
+            .catch(()=>{ window.location.replace(window.location.pathname); });
+    });
+}
 function clip(t){navigator.clipboard.writeText(t).then(()=>toast('Copiado')).catch(()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Copiado')})}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
 ['iH','i5','i1'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{aS=null;bSP();uQ()}));
