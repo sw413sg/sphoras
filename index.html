@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SPACMAN">
 <meta name="theme-color" content="#0e1216">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-512.png">
 <link rel="manifest" href="manifest.json">
 <title>SPACMAN</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -168,31 +168,29 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 /* ---- detalle: tabla con filas continuas ---- */
 
 /* ---- detalle: columnas parejas, valores en una sola columna ---- */
-.dtl-list{display:none;margin-top:10px;overflow-x:auto}
-.dtl-list.visible{display:block;animation:fadeSlide .2s ease}
-.dtl-leg{display:flex;align-items:center;justify-content:flex-end;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);padding-bottom:7px;border-bottom:1px solid var(--border-light)}
-.dtl-leg i{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin:0 4px 0 11px}
-.dtl-leg i.o{background:var(--orange)}
-.dtl-leg i.p{background:var(--purple)}
-.dtl-leg i.c{background:var(--cyan)}
-.dtl-inner{display:grid;grid-template-columns:auto auto auto auto;column-gap:0;row-gap:0;font-family:var(--mono);font-size:13px;line-height:1.35;min-width:0}
-.dtl-c{padding:8px 9px 8px 0;border-bottom:1px solid var(--border);display:flex;align-items:center}
-.dtl-day,.dtl-date{color:var(--text);font-weight:700;white-space:nowrap}
-.dtl-time{color:var(--text2);white-space:nowrap;display:block}
-.dtl-time i{font-style:normal;color:var(--text3);margin:0 2px}
-.dtl-time em{display:block;font-style:normal;font-size:11.5px;color:var(--text3);margin-top:3px;letter-spacing:.3px}
-.dtl-ex{padding-right:0;gap:7px;font-weight:700;white-space:nowrap}
-.dtl-ex b{font-weight:700}
-.dtl-ex .o{color:var(--orange)}
-.dtl-ex .p{color:var(--purple)}
-.dtl-ex .c{color:var(--cyan)}
-.dtl-ex em{font-style:normal;font-weight:400;color:var(--text3);opacity:.4}
-.dtl-off{grid-column:3/-1;padding-right:0;color:var(--warn);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
-.dtl-empty{font-family:var(--mono);font-size:13px;color:var(--text3);padding:2px 0}
 
 .dp-off-row{margin:9px 0 0}
 .off-btn-g{background:var(--surface2);border-color:var(--border);color:var(--text2)}
 .off-btn-g:active{background:var(--surface3)}
+
+/* ---- detalle del período ---- */
+.dtl-list{display:none;margin-top:10px;overflow-x:auto}
+.dtl-list.visible{display:block;animation:fadeSlide .2s ease}
+.dtl-inner{display:grid;grid-template-columns:auto auto auto minmax(0,auto);column-gap:0;row-gap:0;font-family:var(--mono);font-size:12px;line-height:1.35;min-width:0}
+.dtl-c{padding:8px 9px 8px 0;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.dtl-day,.dtl-date{color:var(--text);font-weight:700;white-space:nowrap}
+.dtl-time{color:var(--text2);white-space:nowrap;display:block}
+.dtl-time i{font-style:normal;color:var(--text3);margin:0 2px}
+.dtl-time em{display:block;font-style:normal;font-size:10.5px;color:var(--text3);margin-top:3px;letter-spacing:.3px}
+.dtl-ex{padding-right:0;min-width:0;flex-wrap:wrap;gap:2px 9px;font-weight:700}
+.dtl-ex b{font-weight:700;white-space:nowrap}
+.dtl-ex b i{font-style:normal;font-size:9.5px;font-weight:700;opacity:.7;margin-left:3px}
+.dtl-ex .o{color:var(--orange)}
+.dtl-ex .p{color:var(--purple)}
+.dtl-ex .c{color:var(--cyan)}
+.dtl-ex em{font-style:normal;font-weight:400;color:var(--text3);opacity:.4}
+.dtl-off{grid-column:3/-1;padding-right:0;color:var(--warn);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.dtl-empty{font-family:var(--mono);font-size:12px;color:var(--text3);padding:2px 0}
 </style>
 </head>
 <body>
@@ -201,7 +199,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <header class="app-header">
         <div class="header-row">
             <div>
-                <h1><span class="sp">SP</span><span class="acman">ACMAN</span><span class="app-version">v. 1.5</span></h1>
+                <h1><span class="sp">SP</span><span class="acman">ACMAN</span><span class="app-version">v. 1.5.1</span></h1>
                 <div class="header-subtitle">Control horario</div>
             </div>
             <button class="gear-btn" onclick="openSt()">⚙</button>
@@ -290,13 +288,13 @@ function dtlH(idx){
     if(!rows.length)return'<div class="dtl-empty">Sin registros en este período</div>';
     const nOn=S.calcNoc!==false;
     const ex=x=>{const v=[];
-        if(x.e50>0)v.push(`<b class="o">+${xNm(x.e50)}</b>`);
-        if(x.e100>0)v.push(`<b class="p">+${xNm(x.e100)}</b>`);
-        if(nOn&&x.noc>0)v.push(`<b class="c">+${xNm(x.noc)}</b>`);
+        if(x.e50>0)v.push(`<b class="o">+${xNm(x.e50)}<i>· 50%</i></b>`);
+        if(x.e100>0)v.push(`<b class="p">+${xNm(x.e100)}<i>· 100%</i></b>`);
+        if(nOn&&x.noc>0)v.push(`<b class="c">+${xNm(x.noc)}<i>· Noc</i></b>`);
         return v.length?v.join(''):'<em>·</em>'};
-    return`<div class="dtl-leg"><i class="o"></i>50%<i class="p"></i>100%${nOn?'<i class="c"></i>Noc':''}</div>`+
-        `<div class="dtl-inner">`+
-        rows.map(x=>`<span class="dtl-c dtl-day">${DN[x.dw]}</span>`+
+    /* del más nuevo al más viejo */
+    return`<div class="dtl-inner">`+
+        rows.slice().reverse().map(x=>`<span class="dtl-c dtl-day">${DN[x.dw]}</span>`+
             `<span class="dtl-c dtl-date">${p2(x.dd)}/${p2(x.mm)}</span>`+(x.off
             ?`<span class="dtl-c dtl-off">${x.off}</span>`
             :`<span class="dtl-c dtl-time">${x.ent}<i>a</i>${x.sal}${x.part?`<em>${x.part}</em>`:''}</span>`+
@@ -464,7 +462,28 @@ function updApp(){toast('Actualizando...');if('caches'in window){caches.keys().t
 function clip(t){navigator.clipboard.writeText(t).then(()=>toast('Copiado')).catch(()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Copiado')})}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
 ['iH','i5','i1'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{aS=null;bSP();uQ()}));
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+if('serviceWorker'in navigator){
+    const hadCtrl=!!navigator.serviceWorker.controller;
+    let reloading=false;
+    function swReload(){
+        if(reloading)return;
+        /* no le arrebatamos la pantalla a alguien que está cargando un día */
+        if(document.querySelector('.modal-overlay.open')){setTimeout(swReload,1500);return}
+        reloading=true;location.reload();
+    }
+    navigator.serviceWorker.addEventListener('message',ev=>{
+        if(ev.data&&ev.data.type==='sw-updated'){
+            navigator.serviceWorker.controller&&navigator.serviceWorker.controller.postMessage({type:'alive'});
+            swReload();
+        }
+    });
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadCtrl)swReload()});
+    navigator.serviceWorker.register('./sw.js').then(reg=>{
+        reg.update();
+        setInterval(()=>reg.update(),30*60*1000);
+        document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update()});
+    }).catch(()=>{});
+}
 ld();ls();rC();
 </script>
 </body>
