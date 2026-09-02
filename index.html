@@ -114,7 +114,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 /* ---- detalle de horarios del período ---- */
 
 /* ---- resumen por liquidación: sin recuadro contenedor ---- */
-.liq-wrap{margin:0 16px 14px;display:flex;flex-direction:column;gap:10px}
+.liq-wrap{margin:16px 16px 14px;padding-top:18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
 .liq-period-card{padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0}
 .pay-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:2px 10px;margin-bottom:12px}
 .pay-name{font-size:14px;font-weight:700;color:var(--text);line-height:1.25}
@@ -177,19 +177,19 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .dtl-list{display:none;margin-top:10px;overflow-x:auto}
 .dtl-list.visible{display:block;animation:fadeSlide .2s ease}
 .dtl-inner{display:grid;grid-template-columns:auto auto auto minmax(0,auto);column-gap:0;row-gap:0;font-family:var(--mono);font-size:12px;line-height:1.35;min-width:0}
-.dtl-c{padding:8px 9px 8px 0;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.dtl-c{padding:8px 8px 8px 0;border-bottom:1px solid var(--border);display:flex;align-items:center}
 .dtl-day,.dtl-date{color:var(--text);font-weight:700;white-space:nowrap}
 .dtl-time{color:var(--text2);white-space:nowrap;display:block}
 .dtl-time i{font-style:normal;color:var(--text3);margin:0 2px}
 .dtl-time em{display:block;font-style:normal;font-size:10.5px;color:var(--text3);margin-top:3px;letter-spacing:.3px}
-.dtl-ex{padding-right:0;min-width:0;flex-wrap:nowrap;gap:9px;font-weight:700;white-space:nowrap}
+.dtl-ex{padding-right:0;min-width:0;flex-wrap:nowrap;gap:0;font-weight:700;white-space:nowrap}
 .dtl-ex b{font-weight:700;white-space:nowrap}
-.dtl-ex b i{font-style:normal;font-size:9.5px;font-weight:700;opacity:.7;margin-left:3px}
+.dtl-ex i{font-style:normal;font-weight:400;color:var(--text3);opacity:.5;margin:0 4px}
 .dtl-ex .o{color:var(--orange)}
 .dtl-ex .p{color:var(--purple)}
 .dtl-ex .c{color:var(--cyan)}
 .dtl-ex em{font-style:normal;font-weight:400;color:var(--text3);opacity:.4}
-.dtl-off{grid-column:3/-1;padding-right:0;color:var(--warn);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.dtl-off{grid-column:3/-1;padding-right:0;justify-content:center;color:var(--warn);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
 .dtl-empty{font-family:var(--mono);font-size:12px;color:var(--text3);padding:2px 0}
 </style>
 </head>
@@ -288,13 +288,13 @@ function dtlH(idx){
     if(!rows.length)return'<div class="dtl-empty">Sin registros en este período</div>';
     const nOn=S.calcNoc!==false;
     const ex=x=>{const v=[];
-        if(x.e50>0)v.push(['o','+'+xNm(x.e50),'50%']);
-        if(x.e100>0)v.push(['p','+'+xNm(x.e100),'100%']);
-        if(nOn&&x.noc>0)v.push(['c','+'+xNm(x.noc),'Noc']);
+        if(x.e50>0)v.push(['o','+'+xNm(x.e50)]);
+        if(x.e100>0)v.push(['p','+'+xNm(x.e100)]);
+        if(nOn&&x.noc>0)v.push(['c','+'+xNm(x.noc)]);
         if(!v.length)return'<em>·</em>';
-        /* con un solo valor entra la etiqueta; con varios, compacto en una línea */
-        if(v.length===1)return`<b class="${v[0][0]}">${v[0][1]}<i>· ${v[0][2]}</i></b>`;
-        return v.map(a=>`<b class="${a[0]}">${a[1]}</b>`).join('')};
+        const sep='<i>─</i>';
+        /* el guion cierra el valor y marca que a la derecha no hay nada más */
+        return v.map(a=>`<b class="${a[0]}">${a[1]}</b>`).join(sep)+(v.length===1?sep:'')};
     /* del más nuevo al más viejo */
     return`<div class="dtl-inner">`+
         rows.slice().reverse().map(x=>`<span class="dtl-c dtl-day">${DN[x.dw]}</span>`+
