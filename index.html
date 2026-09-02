@@ -182,7 +182,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .dtl-time{color:var(--text2);white-space:nowrap;display:block}
 .dtl-time i{font-style:normal;color:var(--text3);margin:0 2px}
 .dtl-time em{display:block;font-style:normal;font-size:10.5px;color:var(--text3);margin-top:3px;letter-spacing:.3px}
-.dtl-ex{padding-right:0;min-width:0;flex-wrap:wrap;gap:2px 9px;font-weight:700}
+.dtl-ex{padding-right:0;min-width:0;flex-wrap:nowrap;gap:9px;font-weight:700;white-space:nowrap}
 .dtl-ex b{font-weight:700;white-space:nowrap}
 .dtl-ex b i{font-style:normal;font-size:9.5px;font-weight:700;opacity:.7;margin-left:3px}
 .dtl-ex .o{color:var(--orange)}
@@ -288,10 +288,13 @@ function dtlH(idx){
     if(!rows.length)return'<div class="dtl-empty">Sin registros en este período</div>';
     const nOn=S.calcNoc!==false;
     const ex=x=>{const v=[];
-        if(x.e50>0)v.push(`<b class="o">+${xNm(x.e50)}<i>· 50%</i></b>`);
-        if(x.e100>0)v.push(`<b class="p">+${xNm(x.e100)}<i>· 100%</i></b>`);
-        if(nOn&&x.noc>0)v.push(`<b class="c">+${xNm(x.noc)}<i>· Noc</i></b>`);
-        return v.length?v.join(''):'<em>·</em>'};
+        if(x.e50>0)v.push(['o','+'+xNm(x.e50),'50%']);
+        if(x.e100>0)v.push(['p','+'+xNm(x.e100),'100%']);
+        if(nOn&&x.noc>0)v.push(['c','+'+xNm(x.noc),'Noc']);
+        if(!v.length)return'<em>·</em>';
+        /* con un solo valor entra la etiqueta; con varios, compacto en una línea */
+        if(v.length===1)return`<b class="${v[0][0]}">${v[0][1]}<i>· ${v[0][2]}</i></b>`;
+        return v.map(a=>`<b class="${a[0]}">${a[1]}</b>`).join('')};
     /* del más nuevo al más viejo */
     return`<div class="dtl-inner">`+
         rows.slice().reverse().map(x=>`<span class="dtl-c dtl-day">${DN[x.dw]}</span>`+
