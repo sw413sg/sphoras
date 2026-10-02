@@ -1,7 +1,7 @@
 /* SPACMAN · service worker
    Cambiá VERSION en cada deploy: el navegador solo actualiza si este archivo
    cambia byte a byte. */
-const VERSION = '1.7.0';
+const VERSION = '1.7.2';
 const CACHE = 'spacman-' + VERSION;
 
 /* Solo archivos propios. Nada de CDNs acá: si una sola URL falla,
