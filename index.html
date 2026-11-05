@@ -295,7 +295,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <header class="app-header">
         <div class="header-row">
             <div>
-                <h1><span class="sp">SP</span><span class="acman">ACMAN</span><span class="app-version">v. 1.7.6</span></h1>
+                <h1><span class="sp">SP</span><span class="acman">ACMAN</span><span class="app-version">v. 1.7.7</span></h1>
                 <div class="header-subtitle">Control horario</div>
             </div>
             <button class="gear-btn" onclick="openSt()">⚙</button>
@@ -329,7 +329,7 @@ const FER_FIJOS=[[1,1,'Año Nuevo'],[3,24,'Memoria, Verdad y Justicia'],[4,2,'Ma
     [7,9,'Día de la Independencia'],[12,8,'Inmaculada Concepción'],[12,25,'Navidad']];
 const FER_TRASL=[[6,17,'Paso a la Inmortalidad de Güemes'],[8,17,'Paso a la Inmortalidad de San Martín'],
     [10,12,'Respeto a la Diversidad Cultural'],[11,20,'Día de la Soberanía Nacional']];
-const FER_EXTRA={};
+const FER_EXTRA={'2026-11-09':'Feriado nacional'};
 function pascua(y){
     const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,
         f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,
