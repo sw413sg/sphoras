@@ -372,15 +372,16 @@ function sumaComp(k,e){if(!trabajado(e))return false;
     const[y,m,d]=k.split('-').map(Number);
     return new Date(y,m-1,d).getDay()===0||!!esFer(k)}
 /* hasta: clave YYYY-MM-DD inclusive; sin argumento, el saldo de hoy */
-/* Un turno que cruza la medianoche y entra en domingo o feriado (ej. sábado 18-06)
-   también suma, anotado en el día al que entra. Cada día suma una sola vez. */
+/* Uno por jornal: el turno suma si arranca en domingo o feriado, o si cruza la
+   medianoche y entra en uno (ej. sábado 18-06). Se anota en el día del jornal.
+   Domingo 18-06 hacia un lunes feriado sigue siendo 1. */
 function domFer(k){const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getDay()===0||!!esFer(k)}
 function cruza(e){const a=e&&e.entrada,b=e&&e.salida;return !!(a&&b&&b<a&&b!=='00:00')}
-function cpGanados(){const o={};
+function cpGanados(){const o=[];
     for(const k in D){const e=D[k];if(!trabajado(e))continue;
-        if(domFer(k))o[k]=1;
-        if(cruza(e)){const s=kSig(k);if(domFer(s))o[s]=1}}
-    return Object.keys(o)}
+        if(domFer(k))o.push(k);
+        else if(cruza(e)&&domFer(kSig(k)))o.push(k)}
+    return o}
 function cpC(hasta){let tom=0;
     for(const k in D){if(hasta&&k>hasta)continue;const e=D[k];if(e&&e.tipo==='comp')tom++}
     const gan=cpGanados().filter(k=>!hasta||k<=hasta).length;
