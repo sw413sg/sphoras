@@ -296,7 +296,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <header class="app-header">
         <div class="header-row">
             <div>
-                <h1><span class="sp">SP</span><span class="acman">ACMAN</span><span class="app-version">v. 1.7.9</span></h1>
+                <h1><span class="sp">SP</span><span class="acman">ACMAN</span><span class="app-version">v. 1.7.10</span></h1>
                 <div class="header-subtitle">Control horario</div>
             </div>
             <button class="gear-btn" onclick="openSt()">⚙</button>
@@ -377,10 +377,13 @@ function sumaComp(k,e){if(!trabajado(e))return false;
    Domingo 18-06 hacia un lunes feriado sigue siendo 1. */
 function domFer(k){const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getDay()===0||!!esFer(k)}
 function cruza(e){const a=e&&e.entrada,b=e&&e.salida;return !!(a&&b&&b<a&&b!=='00:00')}
+/* Los cruces cuentan desde esta fecha: el saldo anterior ya estaba ajustado a mano
+   con la regla vieja y contarlos otra vez lo inflaba. */
+const CRUCE_DESDE='2026-10-15';
 function cpGanados(){const o=[];
     for(const k in D){const e=D[k];if(!trabajado(e))continue;
         if(domFer(k))o.push(k);
-        else if(cruza(e)&&domFer(kSig(k)))o.push(k)}
+        else if(k>=CRUCE_DESDE&&cruza(e)&&domFer(kSig(k)))o.push(k)}
     return o}
 function cpC(hasta){let tom=0;
     for(const k in D){if(hasta&&k>hasta)continue;const e=D[k];if(e&&e.tipo==='comp')tom++}
