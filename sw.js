@@ -1,7 +1,7 @@
 /* SPACMAN · service worker
    Cambiá VERSION en cada deploy: el navegador solo actualiza si este archivo
    cambia byte a byte. */
-const VERSION = '1.7.11';
+const VERSION = '1.7.12';
 const CACHE = 'spacman-' + VERSION;
 
 /* Solo archivos propios. Nada de CDNs acá: si una sola URL falla,
@@ -50,6 +50,11 @@ self.addEventListener('message', e => {
 
 self.addEventListener('fetch', e => {
     const req = e.request;
+    /* /api/ siempre a la red. Si el SW lo cachea, GET /api/horas puede
+       devolver un JSON viejo o vacío y la app lo pisa al guardar. */
+    try {
+        if (new URL(req.url).pathname.startsWith('/api/')) return;
+    } catch (err) { return; }
     if (req.method !== 'GET') return;
 
     const accept = req.headers.get('accept') || '';

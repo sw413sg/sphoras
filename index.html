@@ -298,7 +298,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <header class="app-header">
         <div class="header-row">
             <div>
-                <h1><span class="sp">SP</span><span class="acman">ACMAN</span><span class="app-version">v. 1.7.11</span></h1>
+                <h1><span class="sp">SP</span><span class="acman">ACMAN</span><span class="app-version">v. 1.7.12</span></h1>
                 <div class="header-subtitle">Control horario</div>
             </div>
             <button class="gear-btn" onclick="openSt()">⚙</button>
@@ -358,10 +358,66 @@ const SG=[{n:'Mañana',i:'☀',c:'morning',s:[{id:'06-12',l:'06-12',e:'06:00',s:
 const D15_POST=['18-06','22-06'];
 const D15_PRESETS=[{id:'06-12',l:'06-12',e:'06:00',s:'12:00'},{id:'06-14',l:'06-14',e:'06:00',s:'14:00'},{id:'06-18',l:'06-18',e:'06:00',s:'18:00'},{id:'08-16',l:'08-16',e:'08:00',s:'16:00'},{id:'08-18',l:'08-18',e:'08:00',s:'18:00'},{id:'10-18',l:'10-18',e:'10:00',s:'18:00'}];
 function allSc(){const a=[];SG.forEach(g=>g.s.forEach(x=>a.push(x)));return a}
-function ld(){try{const x=localStorage.getItem('mishoras_data');if(x)D=JSON.parse(x)}catch(e){D={}}}
-function sd(){try{localStorage.setItem('mishoras_data',JSON.stringify(D))}catch(e){}}
-function ls(){try{const x=localStorage.getItem('mishoras_settings');if(x)S={...S,...JSON.parse(x)}}catch(e){}}
-function ss(){try{localStorage.setItem('mishoras_settings',JSON.stringify(S))}catch(e){}}
+/* panel.sw4.app: los datos van a la nube. Cualquier otro host sigue en
+   localStorage y no dispara ningún fetch. */
+const CLOUD=location.hostname==='panel.sw4.app';
+let cloudReady=!CLOUD,cloudP=null,cloudQ=Promise.resolve();
+function cloudGet(){
+    if(cloudP)return cloudP;
+    cloudP=fetch('/api/horas',{credentials:'same-origin',cache:'no-store'}).then(async r=>{
+        if(!r.ok)throw new Error(String(r.status));
+        const j=await r.json();
+        if(!j||j.data==null||typeof j.data!=='object'||Array.isArray(j.data)||j.settings==null||typeof j.settings!=='object'||Array.isArray(j.settings))
+            throw new Error('forma');
+        return j;
+    });
+    return cloudP;
+}
+function ld(){
+    if(CLOUD)return cloudGet().then(j=>{D=j.data});
+    try{const x=localStorage.getItem('mishoras_data');if(x)D=JSON.parse(x)}catch(e){D={}}}
+function ls(){
+    if(CLOUD)return cloudGet().then(j=>{S={...S,...j.settings}});
+    try{const x=localStorage.getItem('mishoras_settings');if(x)S={...S,...JSON.parse(x)}}catch(e){}}
+function sd(){
+    if(CLOUD){if(cloudReady)cloudPut();return}
+    try{localStorage.setItem('mishoras_data',JSON.stringify(D))}catch(e){}}
+function ss(){
+    if(CLOUD){if(cloudReady)cloudPut();return}
+    try{localStorage.setItem('mishoras_settings',JSON.stringify(S))}catch(e){}}
+function cloudPut(){cloudQ=cloudQ.then(cloudSend,cloudSend)}
+function cloudSend(){
+    const body=JSON.stringify({data:D,settings:S});
+    return fetch('/api/horas',{method:'PUT',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body}).then(r=>{
+        if(!r.ok)throw new Error(String(r.status));
+        const b=document.getElementById('cloudErr');if(b)b.remove();
+    }).catch(()=>{cloudBanner('No se pudo guardar. Lo que ves no se borró, pero no llegó a la nube.')});
+}
+function cloudBanner(msg){
+    let b=document.getElementById('cloudErr');
+    if(!b){
+        b=document.createElement('div');
+        b.id='cloudErr';
+        b.setAttribute('role','alert');
+        b.style.cssText='position:fixed;left:16px;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,24px));z-index:450;background:#3a1c1c;color:#e07b7b;border:1px solid rgba(224,123,123,.45);border-radius:14px;padding:14px 16px;text-align:center;font-weight:700;font-size:14px;line-height:1.45';
+        document.body.appendChild(b);
+    }
+    b.textContent=msg;
+}
+function cloudGate(msg,err){
+    let g=document.getElementById('cloudGate');
+    if(!g){
+        g=document.createElement('div');
+        g.id='cloudGate';
+        g.style.cssText='position:fixed;inset:0;z-index:500;background:#0e1216;display:flex;align-items:center;justify-content:center;padding:28px;text-align:center';
+        document.body.appendChild(g);
+    }
+    let p=g.firstChild;
+    if(!p){p=document.createElement('div');g.appendChild(p)}
+    p.setAttribute('role',err?'alert':'status');
+    p.style.cssText='max-width:340px;font-weight:700;font-size:16px;line-height:1.45;color:'+(err?'#e07b7b':'#93a3b1');
+    p.textContent=msg;
+}
 /* ---- compensatorios ----
    El saldo no se guarda como un numero suelto: se deduce de los registros
    (domingo o feriado trabajado suma, dia marcado como compensatorio resta)
@@ -562,7 +618,7 @@ function rSac(){const z=document.getElementById('sacZ');if(!z)return;const y=new
 function chY(){document.getElementById('yrL').innerHTML=YS.map(y=>`<button class="btn ${y===cY?'btn-primary':'btn-secondary'}" style="width:100%;margin-bottom:8px" onclick="cY=${y};cYP();prev=null;rC()">${y}</button>`).join('');document.getElementById('yrOv').classList.add('open');lk()}
 function cYP(){document.getElementById('yrOv').classList.remove('open');uk()}
 function chM(d){cM+=d;if(cM<0){cM=11;cY--}if(cM>11){cM=0;cY++}if(cY<YS[0]){cY=YS[0];cM=0}if(cY>YS[YS.length-1]){cY=YS[YS.length-1];cM=11}prev=null;rC()}
-function rC(){document.getElementById('mN').textContent=MN[cM];document.getElementById('yL').textContent=cY+' ▾';const g=document.getElementById('cG');g.innerHTML='';const f=new Date(cY,cM,1);let st=f.getDay();st=st===0?6:st-1;const dm=new Date(cY,cM+1,0).getDate(),td=new Date(),ic=td.getFullYear()===cY&&td.getMonth()===cM;for(let i=0;i<st;i++){const c=document.createElement('div');c.className='day-cell empty';g.appendChild(c)}for(let d=1;d<=dm;d++){const c=document.createElement('div'),k=mk(cY,cM+1,d),en=D[k],dw=new Date(cY,cM,d).getDay(),iw=dw===0||dw===6;let h50=false,h100=false;if(en){if(en.is15){const pr=en.pre||{},po=en.post||{};h50=(pr.e50||0)>0||(po.e50||0)>0;h100=(pr.e100||0)>0||(po.e100||0)>0}else{h50=(parseFloat(en.extra50)||0)>0;h100=(parseFloat(en.extra100)||0)>0}}const tp=en&&en.tipo,nt=tp==='nt',off=tp&&!nt,fer=esFer(k),hoy=ic&&d===td.getDate();let cl='day-cell';if(iw)cl+=' weekend';if(fer)cl+=' hol';if(hoy)cl+=' today';if(prev===k)cl+=' selected';if(off)cl+=' has-off';else if(h100)cl+=' has-100';else if(h50)cl+=' has-extra';else if(en&&!nt)cl+=' has-data';if(nt)cl+=' nt';let dt='';if(off)dt=`<span class="off-tag">${en.tipo==='vac'?'V':en.tipo==='enf'?'E':'C'}</span>`;else if(h50||h100)dt=(h50?'<span class="dot-sm o"></span>':'')+(h100?'<span class="dot-sm p"></span>':'');if(hoy)dt+='<span class="hoy-tag">HOY</span>';if(dt)dt='<div class="dots-row">'+dt+'</div>';c.className=cl;c.innerHTML=`<span class="day-num">${d}</span>${dt}`;const dn=d;c.addEventListener('touchstart',()=>{dLp=false;pK=k;pT=setTimeout(()=>{dLp=true;navigator.vibrate&&navigator.vibrate(30);openEdit(k,dn)},500)},{passive:true});c.addEventListener('touchend',()=>{clearTimeout(pT);if(!dLp&&pK===k)sDP(k,dn);pK=null});c.addEventListener('touchmove',()=>{clearTimeout(pT);pK=null});c.addEventListener('click',()=>{if(!('ontouchstart'in window))sDP(k,dn)});c.addEventListener('dblclick',()=>{if(!('ontouchstart'in window))openEdit(k,dn)});g.appendChild(c)}rDP();rLS();rMoS()}
+function rC(){if(!cloudReady)return;document.getElementById('mN').textContent=MN[cM];document.getElementById('yL').textContent=cY+' ▾';const g=document.getElementById('cG');g.innerHTML='';const f=new Date(cY,cM,1);let st=f.getDay();st=st===0?6:st-1;const dm=new Date(cY,cM+1,0).getDate(),td=new Date(),ic=td.getFullYear()===cY&&td.getMonth()===cM;for(let i=0;i<st;i++){const c=document.createElement('div');c.className='day-cell empty';g.appendChild(c)}for(let d=1;d<=dm;d++){const c=document.createElement('div'),k=mk(cY,cM+1,d),en=D[k],dw=new Date(cY,cM,d).getDay(),iw=dw===0||dw===6;let h50=false,h100=false;if(en){if(en.is15){const pr=en.pre||{},po=en.post||{};h50=(pr.e50||0)>0||(po.e50||0)>0;h100=(pr.e100||0)>0||(po.e100||0)>0}else{h50=(parseFloat(en.extra50)||0)>0;h100=(parseFloat(en.extra100)||0)>0}}const tp=en&&en.tipo,nt=tp==='nt',off=tp&&!nt,fer=esFer(k),hoy=ic&&d===td.getDate();let cl='day-cell';if(iw)cl+=' weekend';if(fer)cl+=' hol';if(hoy)cl+=' today';if(prev===k)cl+=' selected';if(off)cl+=' has-off';else if(h100)cl+=' has-100';else if(h50)cl+=' has-extra';else if(en&&!nt)cl+=' has-data';if(nt)cl+=' nt';let dt='';if(off)dt=`<span class="off-tag">${en.tipo==='vac'?'V':en.tipo==='enf'?'E':'C'}</span>`;else if(h50||h100)dt=(h50?'<span class="dot-sm o"></span>':'')+(h100?'<span class="dot-sm p"></span>':'');if(hoy)dt+='<span class="hoy-tag">HOY</span>';if(dt)dt='<div class="dots-row">'+dt+'</div>';c.className=cl;c.innerHTML=`<span class="day-num">${d}</span>${dt}`;const dn=d;c.addEventListener('touchstart',()=>{dLp=false;pK=k;pT=setTimeout(()=>{dLp=true;navigator.vibrate&&navigator.vibrate(30);openEdit(k,dn)},500)},{passive:true});c.addEventListener('touchend',()=>{clearTimeout(pT);if(!dLp&&pK===k)sDP(k,dn);pK=null});c.addEventListener('touchmove',()=>{clearTimeout(pT);pK=null});c.addEventListener('click',()=>{if(!('ontouchstart'in window))sDP(k,dn)});c.addEventListener('dblclick',()=>{if(!('ontouchstart'in window))openEdit(k,dn)});g.appendChild(c)}rDP();rLS();rMoS()}
 function openEdit(k,d){const[,mm,dd]=k.split('-').map(Number),e=D[k];(dd===15&&!(e&&e.tipo&&e.tipo!=='enf'))?o15(k,d):oM(k,d)}
 function sDP(k,d){if(prev===k){/* volver a tocar el mismo día cierra la ventanita */prev=null;document.querySelectorAll('.day-cell').forEach(c=>c.classList.remove('selected'));rDP();return}prev=k;document.querySelectorAll('.day-cell').forEach(c=>c.classList.remove('selected'));const f=new Date(cY,cM,1);let st=f.getDay();st=st===0?6:st-1;const cells=document.querySelectorAll('.day-cell');if(cells[st+d-1])cells[st+d-1].classList.add('selected');rDP()}
 function esc(t){return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -855,7 +911,28 @@ if('serviceWorker'in navigator){
         document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update()});
     }).catch(()=>{});
 }
-ld();ls();rC();
+if(CLOUD){
+    /* No pintar hasta el GET: un mes vacío llamaría a rC y un ss() de ese
+       render pisaría la nube con D={}. Si falla, no se escribe nada. */
+    cloudGate('Cargando...',false);
+    try{
+        Promise.all([ld(),ls()]).then(()=>{
+            cloudReady=true;
+            const g=document.getElementById('cloudGate');if(g)g.remove();
+            rC();
+        }).catch(err=>{
+            cloudReady=false;
+            cloudGate(String(err&&err.message)==='401'
+                ?'No hay sesión. No se cargaron los datos y no se modificó nada.'
+                :'No se pudieron cargar los datos. No se borró nada. Recargá la página para reintentar.',true);
+        });
+    }catch(e){
+        cloudReady=false;
+        cloudGate('No se pudieron cargar los datos. No se borró nada. Recargá la página para reintentar.',true);
+    }
+}else{
+    ld();ls();rC();
+}
 </script>
 </body>
 </html>
